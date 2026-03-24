@@ -198,3 +198,147 @@ print(f"Subtotal: ₹{subtotal:.2f}")
 print(f"GST (5%): ₹{gst:.2f}")
 print(f"Total Payable: ₹{total:.2f}")
 print("====================================")
+
+
+
+#Task 3: Inventory Tracker with Deep Copy
+
+import copy
+
+# Original inventory data
+inventory = {
+    "Paneer Tikka":   {"stock": 10, "reorder_level": 3},
+    "Chicken Wings":  {"stock":  8, "reorder_level": 2},
+    "Veg Soup":       {"stock": 15, "reorder_level": 5},
+    "Butter Chicken": {"stock": 12, "reorder_level": 4},
+    "Dal Tadka":      {"stock": 20, "reorder_level": 5},
+    "Veg Biryani":    {"stock":  6, "reorder_level": 3},
+    "Garlic Naan":    {"stock": 30, "reorder_level": 10},
+    "Gulab Jamun":    {"stock":  5, "reorder_level": 2},
+    "Rasgulla":       {"stock":  4, "reorder_level": 3},
+    "Ice Cream":      {"stock":  7, "reorder_level": 4},
+}
+
+# Make a deep copy of inventory to keep a backup
+inventory_backup = copy.deepcopy(inventory)
+
+#Demonstrate deep copy
+# Change stock of one item in inventory
+inventory["Paneer Tikka"]["stock"] = 5
+
+print("After changing Paneer Tikka stock in inventory:")
+print("Inventory:", inventory["Paneer Tikka"])
+print("Backup:   ", inventory_backup["Paneer Tikka"])  # Should stay 10
+
+# Restore inventory from backup before processing orders
+inventory = copy.deepcopy(inventory_backup)
+
+#Simulate order fulfilment
+# Example final cart from Task 2
+cart = [
+    {"item": "Paneer Tikka", "quantity": 3, "price": 180.0},
+    {"item": "Gulab Jamun", "quantity": 2, "price": 90.0},
+    {"item": "Garlic Naan", "quantity": 4, "price": 40.0},
+]
+
+# Deduct ordered quantities from inventory
+for order in cart:
+    item_name = order["item"]
+    qty_ordered = order["quantity"]
+
+    if item_name in inventory:
+        available = inventory[item_name]["stock"]
+        if qty_ordered > available:
+            print(f"⚠ Warning: Only {available} unit(s) of {item_name} available. Deducting available stock.")
+            inventory[item_name]["stock"] = 0
+        else:
+            inventory[item_name]["stock"] -= qty_ordered
+
+#Check for reorder alerts
+print("\n--- Reorder Alerts ---")
+for item, data in inventory.items():
+    if data["stock"] <= data["reorder_level"]:
+        print(f"⚠ Reorder Alert: {item} — Only {data['stock']} unit(s) left (reorder level: {data['reorder_level']})")
+
+#Final inventories
+print("\nFinal Inventory:")
+for item, data in inventory.items():
+    print(f"{item}: {data}")
+
+print("\nInventory Backup (unchanged):")
+for item, data in inventory_backup.items():
+    print(f"{item}: {data}")
+
+
+
+#Task 4: Daily Sales Log Analysis
+
+# Provided sales log
+sales_log = {
+    "2025-01-01": [
+        {"order_id": 1,  "items": ["Paneer Tikka", "Garlic Naan"],          "total": 220.0},
+        {"order_id": 2,  "items": ["Gulab Jamun", "Veg Soup"],              "total": 210.0},
+        {"order_id": 3,  "items": ["Butter Chicken", "Garlic Naan"],        "total": 360.0},
+    ],
+    "2025-01-02": [
+        {"order_id": 4,  "items": ["Dal Tadka", "Garlic Naan"],             "total": 220.0},
+        {"order_id": 5,  "items": ["Veg Biryani", "Gulab Jamun"],           "total": 340.0},
+    ],
+    "2025-01-03": [
+        {"order_id": 6,  "items": ["Paneer Tikka", "Rasgulla"],             "total": 260.0},
+        {"order_id": 7,  "items": ["Butter Chicken", "Veg Biryani"],        "total": 570.0},
+        {"order_id": 8,  "items": ["Garlic Naan", "Gulab Jamun"],           "total": 130.0},
+    ],
+    "2025-01-04": [
+        {"order_id": 9,  "items": ["Dal Tadka", "Garlic Naan", "Rasgulla"], "total": 300.0},
+        {"order_id": 10, "items": ["Paneer Tikka", "Gulab Jamun"],          "total": 270.0},
+    ],
+}
+
+#Step 1: Total revenue per day
+print("\n--- Revenue per Day ---")
+daily_revenue = {}
+for date, orders in sales_log.items():
+    total = sum(order["total"] for order in orders)
+    daily_revenue[date] = total
+    print(f"{date}: ₹{total:.2f}")
+
+#Step 2: Best-selling day
+best_day = max(daily_revenue, key=daily_revenue.get)
+print(f"\nBest-selling day: {best_day} with ₹{daily_revenue[best_day]:.2f}")
+
+#Step 3: Most ordered item
+item_counts = {}
+for orders in sales_log.values():
+    for order in orders:
+        for item in order["items"]:
+            item_counts[item] = item_counts.get(item, 0) + 1
+
+most_ordered_item = max(item_counts, key=item_counts.get)
+print(f"Most ordered item: {most_ordered_item} ({item_counts[most_ordered_item]} orders)")
+
+#Step 4: Add a new day
+sales_log["2025-01-05"] = [
+    {"order_id": 11, "items": ["Butter Chicken", "Gulab Jamun", "Garlic Naan"], "total": 490.0},
+    {"order_id": 12, "items": ["Paneer Tikka", "Rasgulla"],                     "total": 260.0},
+]
+
+# Recompute daily revenue after adding new day
+print("\n--- Revenue per Day (after adding 2025-01-05) ---")
+daily_revenue = {}
+for date, orders in sales_log.items():
+    total = sum(order["total"] for order in orders)
+    daily_revenue[date] = total
+    print(f"{date}: ₹{total:.2f}")
+
+best_day = max(daily_revenue, key=daily_revenue.get)
+print(f"\nBest-selling day now: {best_day} with ₹{daily_revenue[best_day]:.2f}")
+
+#Step 5: Numbered list of all orders
+print("\n--- All Orders Numbered ---")
+counter = 1
+for date, orders in sales_log.items():
+    for order in orders:
+        items_str = ", ".join(order["items"])
+        print(f"{counter}.  [{date}] Order #{order['order_id']} — ₹{order['total']:.2f} — Items: {items_str}")
+        counter += 1
