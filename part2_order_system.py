@@ -1,9 +1,9 @@
 # Assignment 3 – Part 2
-# Restaurant Menu & Order Management System
+# Restaurant Menu & Order System
 # Name: Mili Rana
 # Student ID: 2511975
 
-# Provided Data (Do not modify)
+# Provided Data (do not change)
 
 menu = {
     "Paneer Tikka":   {"category": "Starters",  "price": 180.0, "available": True},
@@ -52,208 +52,187 @@ sales_log = {
     ],
 }
 
+# -------------------------
+# Task 1 – Show Menu
+# -------------------------
 
+# Get unique categories
+cats = set([menu[d]["category"] for d in menu])
 
-# Task 1 – Explore the Menu
+for cat in cats:
+    print(f"\n===== {cat} =====")
+    for dish, info in menu.items():
+        if info["category"] == cat:
+            avail = "Available" if info["available"] else "Unavailable"
+            print(dish, "₹"+str(info["price"]), f"[{avail}]")
 
-# Collect all unique categories
-categories_set = set()
-for dish in menu:
-    categories_set.add(menu[dish]["category"])
-
-# Display menu grouped by category with formatting
-for category_name in categories_set:
-    print(f"\n===== {category_name} =====")
-    
-    for dish_name, details in menu.items():
-        if details["category"] == category_name:
-            availability = "Available" if details["available"] else "Unavailable"
-            print(f"{dish_name:15} ₹{details['price']:.2f} [{availability}]")
-
-# Compute statistics
+# Stats
 total_items = len(menu)
-available_items = sum(1 for dish in menu.values() if dish["available"])
-most_expensive_dish = max(menu, key=lambda d: menu[d]["price"])
-most_expensive_price = menu[most_expensive_dish]["price"]
-under_150_items = [(d, menu[d]["price"]) for d in menu if menu[d]["price"] < 150]
+available_count = sum(1 for d in menu.values() if d["available"])
+most_exp_item = max(menu, key=lambda x: menu[x]["price"])
+most_exp_price = menu[most_exp_item]["price"]
+under_150 = [(d, menu[d]["price"]) for d in menu if menu[d]["price"] < 150]
 
-print("\n--- Menu Statistics ---")
-print(f"Total items on menu: {total_items}")
-print(f"Total available items: {available_items}")
-print(f"Most expensive item: {most_expensive_dish} ₹{most_expensive_price:.2f}")
+print("\n--- Menu Stats ---")
+print("Total items:", total_items)
+print("Available items:", available_count)
+print(f"Most expensive: {most_exp_item} ₹{most_exp_price}")
 print("Items under ₹150:")
-for dish, price in under_150_items:
-    print(f"{dish:15} ₹{price:.2f}")
+for d, p in under_150:
+    print(d, "₹"+str(p))
 
-
-
+# -------------------------
 # Task 2 – Cart Operations
+# -------------------------
 
-# Cart to store customer's current order
-current_order = []
+cart = []
 
-def add_menu_item_to_order(menu_item, qty):
-    """Add a menu item to the current order, update quantity if already in order."""
-    if menu_item not in menu:
-        print(f"❌ Sorry, {menu_item} is not on the menu!")
+def add_item(name, qty):
+    if name not in menu:
+        print(f"{name} not on menu")
         return
-    if not menu[menu_item]["available"]:
-        print(f"⚠ {menu_item} is currently unavailable!")
+    if not menu[name]["available"]:
+        print(f"{name} not available")
         return
-
-    # Check if already in order
-    for entry in current_order:
-        if entry["item"] == menu_item:
-            entry["quantity"] += qty
-            print(f"✅ Updated quantity of {menu_item} to {entry['quantity']}")
+    # if already in cart, update qty
+    for c in cart:
+        if c["item"] == name:
+            c["quantity"] += qty
+            print(f"{name} qty updated to {c['quantity']}")
             return
+    cart.append({"item": name, "quantity": qty, "price": menu[name]["price"]})
+    print(f"{name} x{qty} added")
 
-    # Add new item
-    current_order.append({
-        "item": menu_item,
-        "quantity": qty,
-        "price": menu[menu_item]["price"]
-    })
-    print(f"✅ {menu_item} x{qty} added to your order")
-
-def remove_item_from_order(menu_item):
-    """Remove a menu item from the current order."""
-    for entry in current_order:
-        if entry["item"] == menu_item:
-            current_order.remove(entry)
-            print(f"🗑️ {menu_item} removed from order")
+def remove_item(name):
+    for c in cart:
+        if c["item"] == name:
+            cart.remove(c)
+            print(f"{name} removed from cart")
             return
-    print(f"⚠ {menu_item} not found in current order")
+    print(f"{name} not in cart")
 
-def change_item_quantity_in_order(menu_item, qty):
-    """Change quantity of an item already in order."""
-    for entry in current_order:
-        if entry["item"] == menu_item:
-            entry["quantity"] = qty
-            print(f"✏️ Quantity of {menu_item} updated to {qty}")
+def update_qty(name, qty):
+    for c in cart:
+        if c["item"] == name:
+            c["quantity"] = qty
+            print(f"{name} qty changed to {qty}")
             return
-    print(f"⚠ {menu_item} not found in current order")
+    print(f"{name} not in cart")
 
-# Simulate sequence
-print("\n--- Simulating Cart Operations ---")
-add_menu_item_to_order("Paneer Tikka", 2)
-add_menu_item_to_order("Gulab Jamun", 1)
-add_menu_item_to_order("Paneer Tikka", 1)  # Quantity should update
-add_menu_item_to_order("Mystery Burger", 1) # Not on menu
-add_menu_item_to_order("Chicken Wings", 1)  # Unavailable
-remove_item_from_order("Gulab Jamun")
+# simulate order
+add_item("Paneer Tikka", 2)
+add_item("Gulab Jamun", 1)
+add_item("Paneer Tikka", 1) # should become 3
+add_item("Mystery Burger", 1) # not on menu
+add_item("Chicken Wings", 1) # unavailable
+remove_item("Gulab Jamun")
 
-# Print order summary
-print("\n🍽️ Order Summary 🍽️")
+# order summary
+print("\nOrder Summary")
 subtotal = 0
-for entry in current_order:
-    item_total = entry["quantity"] * entry["price"]
-    subtotal += item_total
-    print(f"{entry['item']:15} x{entry['quantity']} ₹{item_total:.2f}")
+for c in cart:
+    total = c["quantity"]*c["price"]
+    subtotal += total
+    print(c["item"], "x"+str(c["quantity"]), "₹"+str(total))
 
-gst = round(subtotal * 0.05, 2)
-total_payable = subtotal + gst
+gst = round(subtotal*0.05, 2)
+total_amt = subtotal + gst
 
-print("-" * 35)
-print(f"Subtotal:           ₹{subtotal:.2f}")
-print(f"GST (5%):           ₹{gst:.2f}")
-print(f"Total Payable:      ₹{total_payable:.2f}")
-print("=" * 35)
+print("-"*30)
+print("Subtotal:", subtotal)
+print("GST 5%:", gst)
+print("Total Payable:", total_amt)
+print("="*30)
 
-
-
-# Task 3 – Inventory Tracker with Deep Copy
+# -------------------------
+# Task 3 – Inventory with Deep Copy
+# -------------------------
 
 import copy
+inv_backup = copy.deepcopy(inventory)
 
-# Backup inventory before changes
-inventory_backup = copy.deepcopy(inventory)
-
-# Demonstrate deep copy works
+# test deep copy
 inventory["Paneer Tikka"]["stock"] = 5
-print("\n--- Deep Copy Demonstration ---")
-print(f"Paneer Tikka stock (changed): {inventory['Paneer Tikka']['stock']}")
-print(f"Paneer Tikka stock (backup):  {inventory_backup['Paneer Tikka']['stock']}")
+print("\nPaneer Tikka stock changed:", inventory["Paneer Tikka"]["stock"])
+print("Backup stock:", inv_backup["Paneer Tikka"]["stock"])
 
-# Restore original inventory
-inventory = copy.deepcopy(inventory_backup)
+# restore
+inventory = copy.deepcopy(inv_backup)
 
-# Deduct quantities from current order
-for entry in current_order:
-    dish_name = entry["item"]
-    qty_ordered = entry["quantity"]
-
-    if dish_name in inventory:
-        available = inventory[dish_name]["stock"]
-        if qty_ordered > available:
-            print(f"⚠ Only {available} {dish_name} in stock. Adding what we have!")
-            inventory[dish_name]["stock"] = 0
+# deduct from inventory
+for c in cart:
+    dish = c["item"]
+    qty = c["quantity"]
+    if dish in inventory:
+        avail = inventory[dish]["stock"]
+        if qty > avail:
+            print(f"Only {avail} {dish} in stock, taking what we can")
+            inventory[dish]["stock"] = 0
         else:
-            inventory[dish_name]["stock"] -= qty_ordered
+            inventory[dish]["stock"] -= qty
 
-# Check for reorder alerts
-print("\n--- Reorder Alerts ---")
-for dish, data in inventory.items():
-    if data["stock"] <= data["reorder_level"]:
-        print(f"⚠ Reorder Alert: {dish} — Only {data['stock']} left (reorder level: {data['reorder_level']})")
+# reorder alerts
+print("\nReorder Alerts")
+for dish, info in inventory.items():
+    if info["stock"] <= info["reorder_level"]:
+        print(f"⚠ Reorder {dish} only {info['stock']} left (level {info['reorder_level']})")
 
-# Print final inventory
-print("\n🍴 Final Inventory 🍴")
-for dish, data in inventory.items():
-    print(f"{dish:15} {data}")
+# final inventory
+print("\nInventory now:")
+for dish, info in inventory.items():
+    print(dish, info)
 
-print("\n🗂 Inventory Backup (unchanged) 🗂")
-for dish, data in inventory_backup.items():
-    print(f"{dish:15} {data}")
+print("\nInventory backup (unchanged):")
+for dish, info in inv_backup.items():
+    print(dish, info)
 
+# -------------------------
+# Task 4 – Sales Log Analysis
+# -------------------------
 
-
-# Task 4 – Daily Sales Log Analysis
-
-# Step 1: Compute total revenue per day
-print("\n--- Revenue per Day ---")
-daily_revenue = {}
+# revenue per day
+print("\nRevenue per day")
+rev_day = {}
 for date, orders in sales_log.items():
-    total = sum(order["total"] for order in orders)
-    daily_revenue[date] = total
-    print(f"💰 {date}: ₹{total:.2f}")
+    total = sum(o["total"] for o in orders)
+    rev_day[date] = total
+    print(date, "₹"+str(total))
 
-# Step 2: Find best-selling day
-best_day = max(daily_revenue, key=daily_revenue.get)
-print(f"🏆 Best-selling day: {best_day} with ₹{daily_revenue[best_day]:.2f}")
+best_day = max(rev_day, key=rev_day.get)
+print("Best-selling day:", best_day, "₹"+str(rev_day[best_day]))
 
-# Step 3: Most ordered item
-item_counts = {}
+# most ordered item
+item_count = {}
 for orders in sales_log.values():
-    for order in orders:
-        for dish in order["items"]:
-            item_counts[dish] = item_counts.get(dish, 0) + 1
+    for o in orders:
+        for dish in o["items"]:
+            item_count[dish] = item_count.get(dish,0)+1
 
-most_ordered = max(item_counts, key=item_counts.get)
-print(f"🔥 Most ordered item: {most_ordered} ({item_counts[most_ordered]} orders)")
+most_ordered = max(item_count, key=item_count.get)
+print("Most ordered item:", most_ordered, f"({item_count[most_ordered]} orders)")
 
-# Step 4: Add new day
+# add new day
 sales_log["2025-01-05"] = [
     {"order_id": 11, "items": ["Butter Chicken", "Gulab Jamun", "Garlic Naan"], "total": 490.0},
     {"order_id": 12, "items": ["Paneer Tikka", "Rasgulla"],                     "total": 260.0},
 ]
 
-# Recompute revenue per day
-print("\n--- Revenue per Day (after 2025-01-05) ---")
-daily_revenue = {}
+# recompute revenue
+print("\nRevenue after 2025-01-05")
+rev_day = {}
 for date, orders in sales_log.items():
-    total = sum(order["total"] for order in orders)
-    daily_revenue[date] = total
-    print(f"💰 {date}: ₹{total:.2f}")
+    total = sum(o["total"] for o in orders)
+    rev_day[date] = total
+    print(date, "₹"+str(total))
 
-best_day = max(daily_revenue, key=daily_revenue.get)
-print(f"🏆 Best-selling day now: {best_day} with ₹{daily_revenue[best_day]:.2f}")
+best_day = max(rev_day, key=rev_day.get)
+print("Best-selling day now:", best_day, "₹"+str(rev_day[best_day]))
 
-# Step 5: Numbered list of all orders
-print("\n--- All Orders Numbered ---")
-counter = 1
+# numbered list of orders
+print("\nAll orders:")
+count = 1
 for date, orders in sales_log.items():
-    for order in orders:
-        items_str = ", ".join(order["items"])
-        print(f"{counter}. [{date}] Order #{order['order_id']} — ₹{order['total']:.2f} — Items: {items_str}")
-        counter += 1
+    for o in orders:
+        items = ", ".join(o["items"])
+        print(f"{count}. [{date}] Order #{o['order_id']} — ₹{o['total']} — Items: {items}")
+        count += 1
