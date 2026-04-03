@@ -3,7 +3,7 @@
 # Name: Mili Rana
 # Student ID: 2511975
 
-# Provided Data (do not change)
+# Provided Data
 
 menu = {
     "Paneer Tikka":   {"category": "Starters",  "price": 180.0, "available": True},
@@ -57,8 +57,10 @@ sales_log = {
 # -------------------------
 
 # Get unique categories
+# loops through each dish in the menu
 cats = set([menu[d]["category"] for d in menu])
 
+# will print menu category-wise
 for cat in cats:
     print(f"\n===== {cat} =====")
     for dish, info in menu.items():
@@ -66,13 +68,14 @@ for cat in cats:
             avail = "Available" if info["available"] else "Unavailable"
             print(dish, "₹"+str(info["price"]), f"[{avail}]")
 
-# Stats
+# menu stats
 total_items = len(menu)
 available_count = sum(1 for d in menu.values() if d["available"])
 most_exp_item = max(menu, key=lambda x: menu[x]["price"])
 most_exp_price = menu[most_exp_item]["price"]
 under_150 = [(d, menu[d]["price"]) for d in menu if menu[d]["price"] < 150]
 
+# print stats
 print("\n--- Menu Stats ---")
 print("Total items:", total_items)
 print("Available items:", available_count)
@@ -81,12 +84,16 @@ print("Items under ₹150:")
 for d, p in under_150:
     print(d, "₹"+str(p))
 
+
+
 # -------------------------
 # Task 2 – Cart Operations
 # -------------------------
 
+# creating emoty cart list
 cart = []
 
+# creating a fuction to add item to cart
 def add_item(name, qty):
     if name not in menu:
         print(f"{name} not on menu")
@@ -94,7 +101,7 @@ def add_item(name, qty):
     if not menu[name]["available"]:
         print(f"{name} not available")
         return
-    # if already in cart, update qty
+    # if already in cart, will update qty
     for c in cart:
         if c["item"] == name:
             c["quantity"] += qty
@@ -103,6 +110,7 @@ def add_item(name, qty):
     cart.append({"item": name, "quantity": qty, "price": menu[name]["price"]})
     print(f"{name} x{qty} added")
 
+# function to remove item from cart
 def remove_item(name):
     for c in cart:
         if c["item"] == name:
@@ -111,6 +119,7 @@ def remove_item(name):
             return
     print(f"{name} not in cart")
 
+# funtion to update qty
 def update_qty(name, qty):
     for c in cart:
         if c["item"] == name:
@@ -144,10 +153,13 @@ print("GST 5%:", gst)
 print("Total Payable:", total_amt)
 print("="*30)
 
+
+
 # -------------------------
 # Task 3 – Inventory with Deep Copy
 # -------------------------
 
+# importing copy module
 import copy
 inv_backup = copy.deepcopy(inventory)
 
@@ -185,6 +197,8 @@ for dish, info in inventory.items():
 print("\nInventory backup (unchanged):")
 for dish, info in inv_backup.items():
     print(dish, info)
+
+
 
 # -------------------------
 # Task 4 – Sales Log Analysis
